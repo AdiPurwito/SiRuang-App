@@ -1,7 +1,5 @@
-package gui;
+package view;
 
-import database.BookingDB;
-import database.JadwalDB;
 import database.RuangDB;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -14,9 +12,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.Booking;
-import model.Jadwal;
 import model.Ruang;
+import util.AlertUtil;
 import util.SesiUtil;
 import util.StatusUtil;
 
@@ -91,40 +88,30 @@ public class CariRuangView extends BorderPane {
 
         bookingBtn.setOnAction(e -> {
             String ruang = ruangField.getEditor().getText().trim();
-            String hari = getHariIni();
             Integer sesiInt = sesiCB.getValue();
 
             if (ruang.isEmpty() || sesiInt == null || sksCB.getValue() == null) {
-                alert("Lengkapi semua kolom untuk booking.");
+                AlertUtil.error("Lengkapi semua kolom untuk booking.");
                 return;
             }
 
             int sksInt = Integer.parseInt(sksCB.getValue());
 
             if (SesiUtil.sesiMelebihiBatas(sesiInt, sksInt)) {
-                alert("Sesi melebihi batas maksimum (maks 14).\nSilakan pilih sesi lebih awal.");
+                AlertUtil.error("Sesi melebihi batas maksimum (maks 14).\nSilakan pilih sesi lebih awal.");
                 return;
             }
 
-            String jamFinal = SesiUtil.getRentangWaktu(sesiInt, sksInt);
-            Booking b = new Booking(username, ruang, hari, jamFinal, "menunggu");
-
-            if (isBentrok(b)) {
-                alert("Ruang tidak tersedia pada sesi tersebut.");
-                return;
-            }
-
-            List<Booking> all = BookingDB.loadAll();
-            all.add(b);
-            BookingDB.saveAll(all);
-
-            alert("Booking berhasil dikirim.");
-            ruangField.getEditor().clear();
-            sesiCB.setValue(null);
-            sksCB.setValue(null);
-            labelWaktu.setText("Waktu: -");
-            refreshTable();
+            controller.CariRuangController.prosesBooking(
+                    username, ruang, sesiInt, sksInt, () -> {
+                        ruangField.getEditor().clear();
+                        sesiCB.setValue(null);
+                        sksCB.setValue(null);
+                        labelWaktu.setText("Waktu: -");
+                        refreshTable();
+                    });
         });
+
 
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10);
@@ -154,7 +141,9 @@ public class CariRuangView extends BorderPane {
     }
 
     private void setupTable() {
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setPrefWidth(1000);
+        table.setPrefHeight(450);
 
         TableColumn<Ruang, String> nama = new TableColumn<>("Ruang");
         nama.setCellValueFactory(new PropertyValueFactory<>("nama"));
@@ -174,7 +163,8 @@ public class CariRuangView extends BorderPane {
             protected void updateItem(String val, boolean empty) {
                 super.updateItem(val, empty);
                 if (empty) {
-                    setText(null); setStyle("");
+                    setText(null);
+                    setStyle("");
                 } else {
                     Ruang r = getTableView().getItems().get(getIndex());
                     String s = getStatus(r.getNama());
@@ -188,6 +178,12 @@ public class CariRuangView extends BorderPane {
                 }
             }
         });
+
+        nama.setPrefWidth(150);
+        gedung.setPrefWidth(120);
+        kapasitas.setPrefWidth(100);
+        sesi.setPrefWidth(120);
+        status.setPrefWidth(180);
 
         table.getColumns().addAll(nama, gedung, kapasitas, sesi, status);
     }
@@ -216,39 +212,7 @@ public class CariRuangView extends BorderPane {
     }
 
     private String getStatus(String ruang) {
-        return StatusUtil.statusRuangNow(ruang);
-    }
-
-    private boolean isBentrok(Booking baru) {
-        for (Jadwal j : JadwalDB.loadJadwal()) {
-            if (j.getHari().equalsIgnoreCase(baru.getHari()) &&
-                    j.getRuang().equalsIgnoreCase(baru.getRuang()) &&
-                    JadwalDB.jamTumpangTindih(j.getJam(), baru.getJam())) {
-                return true;
-            }
-        }
-
-        for (Booking b : BookingDB.loadAll()) {
-            if ((b.getStatus().equals("diterima") || b.getStatus().equals("menunggu")) &&
-                    b.getHari().equalsIgnoreCase(baru.getHari()) &&
-                    b.getRuang().equalsIgnoreCase(baru.getRuang()) &&
-                    JadwalDB.jamTumpangTindih(b.getJam(), baru.getJam())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private String getHariIni() {
-        return switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY -> "Senin";
-            case Calendar.TUESDAY -> "Selasa";
-            case Calendar.WEDNESDAY -> "Rabu";
-            case Calendar.THURSDAY -> "Kamis";
-            case Calendar.FRIDAY -> "Jumat";
-            default -> "Senin";
-        };
+        return controller.CariRuangController.getStatusRuang(ruang);
     }
 
     private void alert(String msg) {

@@ -62,4 +62,15 @@ public class SesiUtil {
         }
         return (start > 0 && end > 0) ? new int[]{start, end} : null;
     }
+
+    public static int[] ekstrakSesiDanSKS(String jam) {
+        // Format jam: "07.00 - 08.40"
+        int[] range = getRangeSesi(jam);
+        if (range == null || range.length != 2) return new int[]{1, 1}; // default fallback
+        int sesiMulai = range[0];
+        int sesiAkhir = range[1];
+        int sks = sesiAkhir - sesiMulai + 1;
+        return new int[]{sesiMulai, sks};
+    }
+
 }

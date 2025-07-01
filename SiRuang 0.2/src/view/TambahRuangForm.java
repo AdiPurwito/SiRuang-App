@@ -1,4 +1,4 @@
-package gui;
+package view;
 
 import database.RuangDB;
 import javafx.geometry.*;

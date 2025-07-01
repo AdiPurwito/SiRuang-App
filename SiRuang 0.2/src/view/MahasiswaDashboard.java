@@ -1,4 +1,4 @@
-package gui;
+package view;
 
 import javafx.geometry.*;
 import javafx.scene.Scene;
@@ -14,7 +14,10 @@ public class MahasiswaDashboard extends BorderPane {
         this.username = username;
         setPadding(new Insets(15));
 
-        Label title = new Label("Dashboard Mahasiswa - " + username);
+        Label title = new Label("SIRuang");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+        Label welcome = new Label("Dashboard Mahasiswa - " + username);
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
         Button btnJadwal = new Button("Jadwal Kuliah");

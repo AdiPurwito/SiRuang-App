@@ -26,6 +26,20 @@ public class JadwalDB {
         return list;
     }
 
+    public static void saveAll(List<Jadwal> list) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE))) {
+            for (Jadwal j : list) {
+                bw.write(toLine(j));
+                bw.newLine();
+            }
+            // tambahkan header untuk file (seperti di deleteJadwal)
+            bw.write("# hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi");
+            bw.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void saveJadwal(Jadwal j) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE, true))) {

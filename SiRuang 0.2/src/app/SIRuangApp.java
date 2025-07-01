@@ -1,18 +1,17 @@
+// app/SIRuangApp.java
 package app;
 
-import gui.LoginView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import view.LoginView;
 
 public class SIRuangApp extends Application {
     @Override
-    public void start(Stage primaryStage) {
-        LoginView loginView = new LoginView(primaryStage);
-        Scene scene = new Scene(loginView, 400, 300);
-        primaryStage.setTitle("SIRuang - Login");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    public void start(Stage stage) {
+        stage.setScene(new Scene(new LoginView(stage), 400, 300));
+        stage.setTitle("SIRuang - Login");
+        stage.show();
     }
 
     public static void main(String[] args) {

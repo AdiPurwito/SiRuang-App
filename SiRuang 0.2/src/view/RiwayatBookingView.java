@@ -1,4 +1,4 @@
-package gui;
+package view;
 
 import database.BookingDB;
 import database.RuangDB;
@@ -47,11 +47,12 @@ public class RiwayatBookingView extends BorderPane {
     }
 
     private void setupTable() {
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.setPrefHeight(500);
         table.setMaxHeight(Double.MAX_VALUE);
 
         TableColumn<Booking, String> gedungCol = new TableColumn<>("Gedung");
+        gedungCol.setMinWidth(120);
         gedungCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -70,21 +71,25 @@ public class RiwayatBookingView extends BorderPane {
 
         TableColumn<Booking, String> ruangCol = new TableColumn<>("Ruang");
         ruangCol.setCellValueFactory(new PropertyValueFactory<>("ruang"));
+        ruangCol.setMinWidth(100);
         ruangCol.setReorderable(false);
         ruangCol.setResizable(false);
 
         TableColumn<Booking, String> hariCol = new TableColumn<>("Hari");
         hariCol.setCellValueFactory(new PropertyValueFactory<>("hari"));
+        hariCol.setMinWidth(80);
         hariCol.setReorderable(false);
         hariCol.setResizable(false);
 
         TableColumn<Booking, String> jamCol = new TableColumn<>("Jam");
         jamCol.setCellValueFactory(new PropertyValueFactory<>("jam"));
+        jamCol.setMinWidth(100);
         jamCol.setReorderable(false);
         jamCol.setResizable(false);
 
         TableColumn<Booking, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusCol.setMinWidth(100);
         statusCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String status, boolean empty) {
@@ -107,6 +112,7 @@ public class RiwayatBookingView extends BorderPane {
         statusCol.setResizable(false);
 
         TableColumn<Booking, Void> aksiCol = new TableColumn<>("Aksi");
+        aksiCol.setMinWidth(100);
         aksiCol.setReorderable(false);
         aksiCol.setResizable(false);
         aksiCol.setCellFactory(param -> new TableCell<>() {
@@ -133,6 +139,7 @@ public class RiwayatBookingView extends BorderPane {
             }
 
             private final HBox pane = new HBox(5, batal);
+
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -149,7 +156,7 @@ public class RiwayatBookingView extends BorderPane {
             }
         });
 
-        table.getColumns().addAll(gedungCol, ruangCol, hariCol, jamCol, statusCol, aksiCol);
+        table.getColumns().setAll(gedungCol, ruangCol, hariCol, jamCol, statusCol, aksiCol);
     }
 
     private void refreshTable() {

@@ -1,0 +1,5 @@
+username|password|role
+
+admin|admin|ADMIN
+Ayub|123|MAHASISWA
+Daffaul|321|MAHASISWA

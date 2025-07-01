@@ -20,6 +20,9 @@ public class Jadwal {
     public Jadwal(String value, String text, String value1, String value2, String value3, String text1, String value4, String text2) {
     }
 
+    public Jadwal(String matkul, String dosen, String ruang, String hari, String jam) {
+    }
+
     // Getter & Setter
     public String getHari() { return hari; }
     public String getJam() { return jam; }
