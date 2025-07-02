@@ -70,19 +70,6 @@ public class RuangDB {
         saveAll(list);
     }
 
-    public static void updateRuang(Ruang lama, Ruang baru) {
-        List<Ruang> list = loadRuang();
-        for (int i = 0; i < list.size(); i++) {
-            Ruang r = list.get(i);
-            if (r.getNama().equalsIgnoreCase(lama.getNama())) {
-                list.set(i, baru);
-                break;
-            }
-        }
-        saveAll(list);
-    }
-
-
     public static void kurangiSesi(String ruangNama) {
         List<Ruang> ruangList = loadRuang();
         for (Ruang r : ruangList) {

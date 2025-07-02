@@ -2,6 +2,7 @@ package view;
 
 import controller.JadwalController;
 import database.JadwalDB;
+import database.ProdiDB;
 import javafx.collections.*;
 import javafx.geometry.*;
 import javafx.scene.Scene;
@@ -12,8 +13,12 @@ import javafx.stage.Stage;
 import model.Jadwal;
 import util.AlertUtil;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class KelolaJadwalView extends BorderPane {
     private TableView<Jadwal> table;
+    private ComboBox<String> filterProdiCB;
 
     public KelolaJadwalView(Stage stage) {
         setPadding(new Insets(15));
@@ -24,9 +29,15 @@ public class KelolaJadwalView extends BorderPane {
         Button tambah = new Button("Tambah Jadwal");
 
         kembali.setOnAction(e -> stage.setScene(new Scene(new AdminDashboard(stage), 800, 600)));
-        tambah.setOnAction(e -> new TambahJadwalForm(() -> refreshTable()).show());
+        tambah.setOnAction(e -> new TambahJadwalForm(this::refreshTable).show());
 
-        HBox headerBtn = new HBox(10, kembali, tambah);
+        filterProdiCB = new ComboBox<>();
+        filterProdiCB.getItems().add("Semua");
+        filterProdiCB.getItems().addAll(ProdiDB.load());
+        filterProdiCB.setValue("Semua");
+        filterProdiCB.setOnAction(e -> refreshTable());
+
+        HBox headerBtn = new HBox(10, kembali, tambah, new Label("Filter Prodi:"), filterProdiCB);
         headerBtn.setAlignment(Pos.CENTER_LEFT);
 
         VBox header = new VBox(10, title, headerBtn);
@@ -89,7 +100,15 @@ public class KelolaJadwalView extends BorderPane {
     }
 
     private void refreshTable() {
-        ObservableList<Jadwal> data = FXCollections.observableArrayList(JadwalDB.loadJadwal());
-        table.setItems(data);
+        List<Jadwal> semua = JadwalDB.loadJadwal();
+        String selectedProdi = filterProdiCB.getValue();
+
+        if (selectedProdi != null && !selectedProdi.equals("Semua")) {
+            semua = semua.stream()
+                    .filter(j -> selectedProdi.equalsIgnoreCase(j.getProdi()))
+                    .collect(Collectors.toList());
+        }
+
+        table.setItems(FXCollections.observableArrayList(semua));
     }
 }

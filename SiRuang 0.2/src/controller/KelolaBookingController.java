@@ -1,27 +1,27 @@
 package controller;
 
 import database.BookingDB;
-import database.JadwalDB;
 import database.RuangDB;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import model.Booking;
-import model.Jadwal;
 import model.Ruang;
 import util.AlertUtil;
+import util.BentrokUtil;
 
 import java.util.List;
 
 public class KelolaBookingController {
 
     public static void terimaBooking(Booking b, Runnable onSuccess) {
-        if (isBentrok(b)) {
-            AlertUtil.success("Booking berhasil diterima.");
+        if (BentrokUtil.isBentrokTotal(b.getHari(), b.getRuang(), b.getJam(), false)) {
+            AlertUtil.error("Booking bentrok dengan jadwal/booking lain.");
             return;
         }
 
         kurangiSesi(b.getRuang());
         BookingDB.updateStatus(b, "diterima");
+        AlertUtil.success("Booking berhasil diterima.");
         onSuccess.run();
     }
 
@@ -29,25 +29,6 @@ public class KelolaBookingController {
         BookingDB.updateStatus(b, "ditolak");
         AlertUtil.show("Booking ditolak.");
         onSuccess.run();
-    }
-
-    private static boolean isBentrok(Booking baru) {
-        for (Jadwal j : JadwalDB.loadJadwal()) {
-            if (j.getHari().equalsIgnoreCase(baru.getHari()) &&
-                    j.getRuang().equalsIgnoreCase(baru.getRuang()) &&
-                    JadwalDB.jamTumpangTindih(j.getJam(), baru.getJam())) {
-                return true;
-            }
-        }
-        for (Booking b : BookingDB.loadAll()) {
-            if (b.getStatus().equalsIgnoreCase("diterima") &&
-                    b.getHari().equalsIgnoreCase(baru.getHari()) &&
-                    b.getRuang().equalsIgnoreCase(baru.getRuang()) &&
-                    JadwalDB.jamTumpangTindih(b.getJam(), baru.getJam())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void kurangiSesi(String ruangNama) {

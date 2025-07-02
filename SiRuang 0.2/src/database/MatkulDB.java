@@ -19,6 +19,7 @@ public class MatkulDB {
         return list;
     }
 
+
     public static void saveIfNew(String matkul) {
         List<String> existing = loadMatkul();
         if (!existing.contains(matkul)) {
