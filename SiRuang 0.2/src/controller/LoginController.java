@@ -21,8 +21,8 @@ public class LoginController {
         }
 
         switch (user.getRole()) {
-            case ADMIN -> stage.setScene(new Scene(new AdminDashboard(stage), 800, 600));
-            case MAHASISWA -> stage.setScene(new Scene(new MahasiswaDashboard(stage, user.getUsername()), 800, 600));
+            case ADMIN -> stage.setScene(new Scene(new AdminDashboard(stage), 400, 300));
+            case MAHASISWA -> stage.setScene(new Scene(new MahasiswaDashboard(stage, user.getUsername()), 400, 300));
         }
     }
 }

@@ -5,6 +5,7 @@ import database.JadwalDB;
 import model.Booking;
 import model.Jadwal;
 
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.List;
 
@@ -46,7 +47,16 @@ public class StatusUtil {
             }
         }
 
-        return sesiSekarang == -1 ? "Di Luar Sesi" : "Kosong";
+        if (sesiSekarang == -1) {
+            LocalTime now = LocalTime.now();
+            if (now.isAfter(LocalTime.of(6, 30)) && now.isBefore(LocalTime.of(21, 0))) {
+                return "Kosong";
+            } else {
+                return "Di Luar Jam Kampus";
+            }
+        }
+        return "Kosong";
+
     }
 
     public static String getHariIni() {

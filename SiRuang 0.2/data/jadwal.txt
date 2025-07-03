@@ -1,3 +1,1 @@
-Selasa|12.10 - 14.40|Pemrograman Berbasis Objek|2|3|K|Verra Putri|R611|Teknik|Informatika
-Selasa|15.15 - 16.55|Matematika Diskrit|2|2|K|Budiono Siregar S.T., M.T,.|R611|Teknik|Informatika
 # hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi

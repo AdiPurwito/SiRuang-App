@@ -75,20 +75,18 @@ public class CariRuangView extends BorderPane {
 
         Label labelWaktu = new Label("Waktu: -");
 
-        // === Autocomplete ruang berdasarkan gedung ===
-        // === Autocomplete ruang: aktif walau belum pilih gedung ===
         List<String> semuaRuang = RuangDB.loadRuang().stream()
                 .map(Ruang::getNama)
                 .distinct()
                 .toList();
-        AutoCompleteTextField.attachTo(ruangField, semuaRuang); // tampilkan semua dulu
+        AutoCompleteTextField.attachTo(ruangField, semuaRuang);
 
         gedungCB.setOnAction(e -> {
             String selectedGedung = gedungCB.getValue();
             List<String> ruangFiltered;
 
             if (selectedGedung == null || selectedGedung.isEmpty()) {
-                ruangFiltered = semuaRuang; // fallback ke semua ruang
+                ruangFiltered = semuaRuang;
             } else {
                 ruangFiltered = RuangDB.loadRuang().stream()
                         .filter(r -> r.getGedung().equalsIgnoreCase(selectedGedung))
@@ -99,8 +97,6 @@ public class CariRuangView extends BorderPane {
 
             AutoCompleteTextField.attachTo(ruangField, ruangFiltered);
         });
-
-
 
         sesiCB.setOnAction(e -> updateWaktuLabel(sesiCB, sksCB, labelWaktu));
         sksCB.setOnAction(e -> updateWaktuLabel(sesiCB, sksCB, labelWaktu));

@@ -18,7 +18,6 @@ public class CariRuangController {
         String hari = getHariIni();
         String jamFinal = SesiUtil.getRentangWaktu(sesiMulai, sks);
 
-        // ✅ Cek status ruang sebelum booking
         String statusRuang = StatusUtil.statusRuangNow(ruang);
         if (statusRuang.equalsIgnoreCase("Menunggu")) {
             AlertUtil.error("Ruang sedang dalam status MENUNGGU dan tidak dapat dibooking.");
@@ -27,7 +26,7 @@ public class CariRuangController {
 
         Booking baru = new Booking(username, ruang, hari, jamFinal, "menunggu");
 
-        if (BentrokUtil.isBentrokTotal(hari, ruang, jamFinal, true)) {
+        if (util.BentrokUtil.isBentrokTotal(hari, ruang, jamFinal, true)) {
             AlertUtil.error("Ruang tidak tersedia pada sesi tersebut.");
             return;
         }
@@ -40,6 +39,7 @@ public class CariRuangController {
         AlertUtil.show("Booking berhasil dikirim.");
         onSuccess.run();
     }
+
 
     public static String getHariIni() {
         return switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
