@@ -16,6 +16,7 @@ import model.Ruang;
 import util.AlertUtil;
 import util.SesiUtil;
 import util.StatusUtil;
+import util.AutoCompleteTextField;
 
 import java.util.*;
 
@@ -41,7 +42,7 @@ public class CariRuangView extends BorderPane {
         filterGedung.setPromptText("Pilih Gedung");
 
         filterStatus = new ComboBox<>();
-        filterStatus.getItems().addAll("Kosong", "Menunggu", "Terbooking", "Terpakai Jadwal");
+        filterStatus.getItems().addAll("Semua", "Kosong", "Menunggu", "Terbooking", "Terpakai Jadwal");
         filterStatus.setPromptText("Pilih Status");
 
         filterGedung.setOnAction(e -> applyFilters());
@@ -56,20 +57,13 @@ public class CariRuangView extends BorderPane {
         VBox header = new VBox(10, title, topBar);
         header.setPadding(new Insets(10, 0, 10, 0));
 
-        // ==== Form Booking ====
+        // === Form Booking ===
         ComboBox<String> gedungCB = new ComboBox<>();
         gedungCB.getItems().addAll("GKB 1", "GKB 2", "GKB 3", "GKB 4");
         gedungCB.setPromptText("Gedung");
 
-        ComboBox<String> ruangField = new ComboBox<>();
-        ruangField.setEditable(true);
+        TextField ruangField = new TextField();
         ruangField.setPromptText("Ruang (cth: R101)");
-        ruangField.getItems().addAll(
-                RuangDB.loadRuang().stream()
-                        .map(Ruang::getNama)
-                        .distinct()
-                        .toList()
-        );
 
         ComboBox<Integer> sesiCB = new ComboBox<>();
         sesiCB.getItems().addAll(SesiUtil.getPilihanSesiMulai());
@@ -81,13 +75,40 @@ public class CariRuangView extends BorderPane {
 
         Label labelWaktu = new Label("Waktu: -");
 
+        // === Autocomplete ruang berdasarkan gedung ===
+        // === Autocomplete ruang: aktif walau belum pilih gedung ===
+        List<String> semuaRuang = RuangDB.loadRuang().stream()
+                .map(Ruang::getNama)
+                .distinct()
+                .toList();
+        AutoCompleteTextField.attachTo(ruangField, semuaRuang); // tampilkan semua dulu
+
+        gedungCB.setOnAction(e -> {
+            String selectedGedung = gedungCB.getValue();
+            List<String> ruangFiltered;
+
+            if (selectedGedung == null || selectedGedung.isEmpty()) {
+                ruangFiltered = semuaRuang; // fallback ke semua ruang
+            } else {
+                ruangFiltered = RuangDB.loadRuang().stream()
+                        .filter(r -> r.getGedung().equalsIgnoreCase(selectedGedung))
+                        .map(Ruang::getNama)
+                        .distinct()
+                        .toList();
+            }
+
+            AutoCompleteTextField.attachTo(ruangField, ruangFiltered);
+        });
+
+
+
         sesiCB.setOnAction(e -> updateWaktuLabel(sesiCB, sksCB, labelWaktu));
         sksCB.setOnAction(e -> updateWaktuLabel(sesiCB, sksCB, labelWaktu));
 
         Button bookingBtn = new Button("Booking");
 
         bookingBtn.setOnAction(e -> {
-            String ruang = ruangField.getEditor().getText().trim();
+            String ruang = ruangField.getText().trim();
             Integer sesiInt = sesiCB.getValue();
 
             if (ruang.isEmpty() || sesiInt == null || sksCB.getValue() == null) {
@@ -104,7 +125,7 @@ public class CariRuangView extends BorderPane {
 
             controller.CariRuangController.prosesBooking(
                     username, ruang, sesiInt, sksInt, () -> {
-                        ruangField.getEditor().clear();
+                        ruangField.clear();
                         sesiCB.setValue(null);
                         sksCB.setValue(null);
                         labelWaktu.setText("Waktu: -");
@@ -112,9 +133,9 @@ public class CariRuangView extends BorderPane {
                     });
         });
 
-
         GridPane form = new GridPane();
-        form.setHgap(10); form.setVgap(10);
+        form.setHgap(10);
+        form.setVgap(10);
         form.add(new Label("Gedung:"), 0, 0); form.add(gedungCB, 1, 0);
         form.add(new Label("Ruang:"), 0, 1); form.add(ruangField, 1, 1);
         form.add(new Label("Sesi Mulai:"), 0, 2); form.add(sesiCB, 1, 2);
@@ -128,8 +149,7 @@ public class CariRuangView extends BorderPane {
         setTop(header);
         setCenter(content);
         refreshTable();
-
-        startAutoRefresh(); // 🔄 Aktifkan auto refresh setiap 5 detik
+        startAutoRefresh();
     }
 
     private void updateWaktuLabel(ComboBox<Integer> sesiCB, ComboBox<String> sksCB, Label label) {
@@ -167,23 +187,18 @@ public class CariRuangView extends BorderPane {
                     setStyle("");
                 } else {
                     Ruang r = getTableView().getItems().get(getIndex());
-                    String s = getStatus(r.getNama());
+                    String s = StatusUtil.statusRuangNow(r.getNama());
                     setText(s);
                     setStyle("-fx-background-color: " + switch (s) {
                         case "Terpakai Jadwal" -> "#dc3545";
                         case "Terbooking" -> "#007bff";
                         case "Menunggu" -> "#ffc107";
+                        case "Di Luar Sesi" -> "#6c757d";
                         default -> "#28a745";
                     } + "; -fx-text-fill: white;");
                 }
             }
         });
-
-        nama.setPrefWidth(150);
-        gedung.setPrefWidth(120);
-        kapasitas.setPrefWidth(100);
-        sesi.setPrefWidth(120);
-        status.setPrefWidth(180);
 
         table.getColumns().addAll(nama, gedung, kapasitas, sesi, status);
     }
@@ -201,7 +216,7 @@ public class CariRuangView extends BorderPane {
         List<Ruang> filtered = all.stream().filter(r -> {
             boolean matchGedung = gedung == null || r.getGedung().equalsIgnoreCase(gedung);
             boolean matchStatus = true;
-            if (status != null) {
+            if (status != null && !"Semua".equalsIgnoreCase(status)) {
                 String s = StatusUtil.statusRuangNow(r.getNama());
                 matchStatus = s.equalsIgnoreCase(status);
             }
@@ -211,19 +226,8 @@ public class CariRuangView extends BorderPane {
         table.setItems(FXCollections.observableArrayList(filtered));
     }
 
-    private String getStatus(String ruang) {
-        return controller.CariRuangController.getStatusRuang(ruang);
-    }
-
-    private void alert(String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION, msg);
-        a.showAndWait();
-    }
-
     private void startAutoRefresh() {
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(5), e -> refreshTable())
-        );
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> refreshTable()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }

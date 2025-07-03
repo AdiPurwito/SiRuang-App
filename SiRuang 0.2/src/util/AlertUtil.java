@@ -4,7 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
-public interface AlertUtil {
+public abstract class AlertUtil {
 
     // Informasi biasa
     public static void show(String message) {

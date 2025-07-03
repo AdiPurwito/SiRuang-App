@@ -33,7 +33,7 @@ public class KelolaJadwalView extends BorderPane {
 
         filterProdiCB = new ComboBox<>();
         filterProdiCB.getItems().add("Semua");
-        filterProdiCB.getItems().addAll(ProdiDB.load());
+        filterProdiCB.getItems().addAll(new ProdiDB().load());
         filterProdiCB.setValue("Semua");
         filterProdiCB.setOnAction(e -> refreshTable());
 

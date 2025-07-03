@@ -1,12 +1,15 @@
 package database;
 
+import interfaces.StaticDataHandler;
+
 import java.io.*;
 import java.util.*;
 
-public class MatkulDB {
+public class MatkulDB implements StaticDataHandler {
     private static final String FILE = System.getProperty("user.dir") + "/data/matkul.txt";
 
-    public static List<String> loadMatkul() {
+    @Override
+    public List<String> load() {
         List<String> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE))) {
             String line;
@@ -19,9 +22,9 @@ public class MatkulDB {
         return list;
     }
 
-
-    public static void saveIfNew(String matkul) {
-        List<String> existing = loadMatkul();
+    @Override
+    public void saveIfNew(String matkul) {
+        List<String> existing = load();
         if (!existing.contains(matkul)) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE, true))) {
                 bw.write(matkul);

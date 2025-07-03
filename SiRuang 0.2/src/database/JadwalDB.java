@@ -1,13 +1,33 @@
 package database;
 
+import interfaces.DatabaseHandler;
 import model.Jadwal;
+import util.SesiUtil;
 
 import java.io.*;
 import java.util.*;
 
-public class JadwalDB {
+public class JadwalDB implements DatabaseHandler<Jadwal> {
     private static final String FILE = System.getProperty("user.dir") + "/data/jadwal.txt";
 
+    @Override
+    public List<Jadwal> load() {
+        return loadJadwal();
+    }
+
+    @Override
+    public void saveAll(List<Jadwal> list) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE))) {
+            for (Jadwal j : list) {
+                bw.write(toLine(j));
+                bw.newLine();
+            }
+            bw.write("# hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi");
+            bw.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static List<Jadwal> loadJadwal() {
         List<Jadwal> list = new ArrayList<>();
@@ -26,31 +46,6 @@ public class JadwalDB {
         return list;
     }
 
-    public static void saveAll(List<Jadwal> list) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE))) {
-            for (Jadwal j : list) {
-                bw.write(toLine(j));
-                bw.newLine();
-            }
-            // tambahkan header untuk file (seperti di deleteJadwal)
-            bw.write("# hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi");
-            bw.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static void saveJadwal(Jadwal j) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE, true))) {
-            bw.write(String.join("|", j.getHari(), j.getJam(), j.getMatkul(), j.getSemester(),
-                    j.getSks(), j.getKelas(), j.getDosen(), j.getRuang(), j.getFakultas(), j.getProdi()));
-            bw.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void updateJadwal(Jadwal lama, Jadwal baru) {
         List<Jadwal> semua = loadJadwal();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE))) {
@@ -61,7 +56,6 @@ public class JadwalDB {
                     bw.write(toLine(j));
                 }
                 bw.newLine();
-
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,19 +70,16 @@ public class JadwalDB {
                     bw.write(toLine(j));
                     bw.newLine();
                 } else {
-                    // kembalikan sesi ruang
-                    RuangDB.tambahSesi(j.getRuang());
+                    int[] sesi = SesiUtil.ekstrakSesiDanSKS(j.getJam());
+                    RuangDB.tambahSesi(j.getRuang(), sesi[1]);
                 }
-                bw.write("# hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi");
-                bw.newLine();
-
-
             }
+            bw.write("# hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi");
+            bw.newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     private static String toLine(Jadwal j) {
         return String.join("|", j.getHari(), j.getJam(), j.getMatkul(), j.getSemester(),
@@ -96,14 +87,18 @@ public class JadwalDB {
     }
 
     public static boolean isSame(Jadwal a, Jadwal b) {
-        return a.getHari().equals(b.getHari()) &&
-                a.getJam().equals(b.getJam()) &&
-                a.getMatkul().equals(b.getMatkul()) &&
-                a.getSemester().equals(b.getSemester()) &&
-                a.getSks().equals(b.getSks()) &&
-                a.getKelas().equals(b.getKelas()) &&
-                a.getDosen().equals(b.getDosen()) &&
-                a.getRuang().equals(b.getRuang());
+        return normalize(a.getHari()).equals(normalize(b.getHari())) &&
+                normalize(a.getJam()).equals(normalize(b.getJam())) &&
+                normalize(a.getMatkul()).equals(normalize(b.getMatkul())) &&
+                normalize(a.getSemester()).equals(normalize(b.getSemester())) &&
+                normalize(a.getSks()).equals(normalize(b.getSks())) &&
+                normalize(a.getKelas()).equals(normalize(b.getKelas())) &&
+                normalize(a.getDosen()).equals(normalize(b.getDosen())) &&
+                normalize(a.getRuang()).equals(normalize(b.getRuang()));
+    }
+
+    private static String normalize(String s) {
+        return s == null ? "" : s.trim().toLowerCase();
     }
 
     public static boolean isJadwalBentrok(Jadwal baru) {

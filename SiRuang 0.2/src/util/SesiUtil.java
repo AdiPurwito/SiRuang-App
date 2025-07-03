@@ -1,5 +1,6 @@
 package util;
 
+import java.time.LocalTime;
 import java.util.*;
 
 public class SesiUtil {
@@ -37,20 +38,15 @@ public class SesiUtil {
         return (sesiMulai < 1 || sesiMulai + sks - 1 > SESI.length);
     }
 
-    public static String getDaftarSesi() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < SESI.length; i++) {
-            sb.append("Sesi ").append(i + 1).append(": ")
-                    .append(SESI[i][0]).append("–").append(SESI[i][1]).append("\n");
-        }
-        return sb.toString();
+    public static int getSesiMulaiDariJam(String jam) {
+        int[] sesi = ekstrakSesiDanSKS(jam);
+        return sesi[0];
     }
 
-    public static String getWaktu(int sesi) {
-        if (sesi < 1 || sesi > SESI.length) return "-";
-        return SESI[sesi - 1][0] + " – " + SESI[sesi - 1][1];
+    public static int getSksDariJam(String jam) {
+        int[] sesi = ekstrakSesiDanSKS(jam);
+        return sesi[1];
     }
-
 
     public static int[] getRangeSesi(String waktu) {
         // Format waktu = "07.00 - 08.40" → cari sesi mulai dan sesi akhir
@@ -73,4 +69,22 @@ public class SesiUtil {
         return new int[]{sesiMulai, sks};
     }
 
+    public static int getSesiSekarang() {
+        LocalTime now = LocalTime.now();
+        for (int i = 0; i < SESI.length; i++) {
+            LocalTime start = parseTime(SESI[i][0]);
+            LocalTime end = parseTime(SESI[i][1]);
+            if (!now.isBefore(start) && now.isBefore(end)) {
+                return i + 1;
+            }
+        }
+        return -1; // di luar jam sesi
+    }
+
+    private static LocalTime parseTime(String str) {
+        String[] parts = str.split("\\.");
+        int jam = Integer.parseInt(parts[0]);
+        int menit = Integer.parseInt(parts[1]);
+        return LocalTime.of(jam, menit);
+    }
 }

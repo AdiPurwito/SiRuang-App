@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Booking;
+import util.SesiUtil;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,8 +129,11 @@ public class RiwayatBookingView extends BorderPane {
                                 old.getRuang().equals(b.getRuang()) &&
                                 old.getHari().equals(b.getHari()) &&
                                 old.getJam().equals(b.getJam()));
-                        BookingDB.saveAll(all);
-                        RuangDB.tambahSesi(b.getRuang());
+                        new BookingDB().saveAll(all);
+
+                        int[] sesi = SesiUtil.ekstrakSesiDanSKS(b.getJam());
+                        RuangDB.tambahSesi(b.getRuang(), sesi[1]);
+
                         refreshTable();
 
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Booking berhasil dibatalkan.");

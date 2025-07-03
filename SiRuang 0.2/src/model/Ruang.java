@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class Ruang {
     private String nama, gedung;
     private int kapasitas, jumlahSesi;
@@ -19,4 +21,20 @@ public class Ruang {
     public void setJumlahSesi(int jumlahSesi) {
         this.jumlahSesi = jumlahSesi;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ruang ruang = (Ruang) o;
+        return nama.equalsIgnoreCase(ruang.nama) &&
+                gedung.equalsIgnoreCase(ruang.gedung);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nama.toLowerCase(), gedung.toLowerCase());
+    }
+
+
 }

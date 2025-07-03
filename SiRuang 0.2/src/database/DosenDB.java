@@ -1,13 +1,15 @@
 package database;
 
+import interfaces.StaticDataHandler;
+
 import java.io.*;
 import java.util.*;
 
-public class DosenDB {
+public class DosenDB implements StaticDataHandler {
     private static final String FILE = System.getProperty("user.dir") + "/data/dosen.txt";
 
-
-    public static List<String> loadDosen() {
+    @Override
+    public List<String> load() {
         List<String> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE))) {
             String line;
@@ -20,8 +22,9 @@ public class DosenDB {
         return list;
     }
 
-    public static void saveIfNew(String dosen) {
-        List<String> existing = loadDosen();
+    @Override
+    public void saveIfNew(String dosen) {
+        List<String> existing = load();
         if (!existing.contains(dosen)) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE, true))) {
                 bw.write(dosen);

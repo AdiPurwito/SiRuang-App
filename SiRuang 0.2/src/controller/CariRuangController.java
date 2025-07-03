@@ -6,16 +6,25 @@ import javafx.scene.control.Alert;
 import model.Booking;
 import util.AlertUtil;
 import util.BentrokUtil;
+import util.SesiUtil;
+import util.StatusUtil;
 
 import java.util.Calendar;
 import java.util.List;
 
 public class CariRuangController {
 
-
     public static void prosesBooking(String username, String ruang, int sesiMulai, int sks, Runnable onSuccess) {
         String hari = getHariIni();
-        String jamFinal = util.SesiUtil.getRentangWaktu(sesiMulai, sks);
+        String jamFinal = SesiUtil.getRentangWaktu(sesiMulai, sks);
+
+        // ✅ Cek status ruang sebelum booking
+        String statusRuang = StatusUtil.statusRuangNow(ruang);
+        if (statusRuang.equalsIgnoreCase("Menunggu")) {
+            AlertUtil.error("Ruang sedang dalam status MENUNGGU dan tidak dapat dibooking.");
+            return;
+        }
+
         Booking baru = new Booking(username, ruang, hari, jamFinal, "menunggu");
 
         if (BentrokUtil.isBentrokTotal(hari, ruang, jamFinal, true)) {
@@ -23,16 +32,13 @@ public class CariRuangController {
             return;
         }
 
-        List<Booking> semua = BookingDB.loadAll();
+        BookingDB db = new BookingDB();
+        List<Booking> semua = db.load();
         semua.add(baru);
-        BookingDB.saveAll(semua);
+        db.saveAll(semua);
 
         AlertUtil.show("Booking berhasil dikirim.");
         onSuccess.run();
-    }
-
-    public static String getStatusRuang(String ruang) {
-        return util.StatusUtil.statusRuangNow(ruang);
     }
 
     public static String getHariIni() {

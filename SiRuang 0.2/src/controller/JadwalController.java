@@ -1,6 +1,7 @@
 package controller;
 
 import database.JadwalDB;
+import database.RuangDB;
 import model.Jadwal;
 import util.AlertUtil;
 import util.BentrokUtil;
@@ -31,16 +32,19 @@ public class JadwalController {
             return;
         }
 
-        List<Jadwal> semua = JadwalDB.loadJadwal();
+        JadwalDB db = new JadwalDB(); // bisa disimpan di variabel kalau sering dipakai
+        List<Jadwal> semua = db.load();
         semua.add(baru);
-        JadwalDB.saveAll(semua);
+        RuangDB.kurangiSesi(baru.getRuang(), sks);
+        db.saveAll(semua);
         AlertUtil.success("Jadwal berhasil ditambahkan.");
         onSuccess.run();
+
     }
 
     public static void updateJadwal(Jadwal lama, Jadwal baru, Runnable onSuccess) {
         List<Jadwal> semua = JadwalDB.loadJadwal();
-        semua.removeIf(j -> j.equals(lama));
+        semua.removeIf(j -> JadwalDB.isSame(j, lama));
 
         if (BentrokUtil.bentrokDenganJadwal(baru.getHari(), baru.getRuang(), baru.getJam())) {
             AlertUtil.error("Jadwal bentrok dengan jadwal lain!");
@@ -48,7 +52,15 @@ public class JadwalController {
         }
 
         semua.add(baru);
-        JadwalDB.saveAll(semua);
+
+        int[] sesiLama = SesiUtil.ekstrakSesiDanSKS(lama.getJam());
+        int[] sesiBaru = SesiUtil.ekstrakSesiDanSKS(baru.getJam());
+
+        RuangDB.tambahSesi(lama.getRuang(), sesiLama[1]);
+        RuangDB.kurangiSesi(baru.getRuang(), sesiBaru[1]);
+
+        JadwalDB db = new JadwalDB();
+        db.saveAll(semua);
         AlertUtil.success("Jadwal berhasil diperbarui.");
         onSuccess.run();
     }

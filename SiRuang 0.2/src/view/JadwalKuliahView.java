@@ -3,6 +3,8 @@ package view;
 import database.FakultasDB;
 import database.JadwalDB;
 import database.ProdiDB;
+import database.RuangDB;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.*;
@@ -12,6 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.Jadwal;
+import model.Ruang;
 
 import java.util.Comparator;
 
@@ -42,8 +45,14 @@ public class JadwalKuliahView extends BorderPane {
         filterFakultas.setPromptText("Fakultas");
         filterProdi.setPromptText("Prodi");
 
-        filterFakultas.getItems().addAll(FakultasDB.load());
-        filterProdi.getItems().addAll(ProdiDB.load());
+        filterFakultas.getItems().add("Semua");
+        filterFakultas.getItems().addAll(new FakultasDB().load());
+        filterFakultas.setValue("Semua"); // set default
+
+        filterProdi.getItems().add("Semua");
+        filterProdi.getItems().addAll(new ProdiDB().load());
+        filterProdi.setValue("Semua"); // set default
+
 
         filterFakultas.setOnAction(e -> applyFilter(allData, filterFakultas, filterProdi, tableData));
         filterProdi.setOnAction(e -> applyFilter(allData, filterFakultas, filterProdi, tableData));
@@ -60,6 +69,7 @@ public class JadwalKuliahView extends BorderPane {
     }
 
     private void setupTable(TableView<Jadwal> table) {
+        // Kolom Hari dengan penggabungan
         TableColumn<Jadwal, String> hariCol = new TableColumn<>("Hari");
         hariCol.setCellFactory(col -> new TableCell<>() {
             @Override
@@ -82,28 +92,58 @@ public class JadwalKuliahView extends BorderPane {
         hariCol.setReorderable(false);
         hariCol.setResizable(false);
 
-        String[] headers = {"Jam", "Mata Kuliah", "Semester", "SKS", "Kelas", "Dosen", "Ruang"};
-        String[] props = {"jam", "matkul", "semester", "sks", "kelas", "dosen", "ruang"};
-        int[] widths = {120, 150, 80, 60, 60, 350, 80};
+        // Kolom Jam
+        TableColumn<Jadwal, String> jamCol = new TableColumn<>("Jam");
+        jamCol.setCellValueFactory(new PropertyValueFactory<>("jam"));
+        jamCol.setMinWidth(120);
 
-        table.getColumns().add(hariCol);
+        // Kolom GKB (dari ruang)
+        TableColumn<Jadwal, String> gkbCol = new TableColumn<>("GKB");
+        gkbCol.setCellValueFactory(data -> {
+            String gedung = RuangDB.getGedungByRuang(data.getValue().getRuang());
+            return new SimpleStringProperty(gedung);
 
-        for (int i = 0; i < headers.length; i++) {
-            TableColumn<Jadwal, String> col = new TableColumn<>(headers[i]);
-            col.setCellValueFactory(new PropertyValueFactory<>(props[i]));
-            col.setMinWidth(widths[i]);
-            col.setResizable(false);
-            col.setReorderable(false);
-            table.getColumns().add(col);
-        }
+        });
+        gkbCol.setMinWidth(80);
+
+        // Kolom Ruang
+        TableColumn<Jadwal, String> ruangCol = new TableColumn<>("Ruang");
+        ruangCol.setCellValueFactory(new PropertyValueFactory<>("ruang"));
+        ruangCol.setMinWidth(80);
+
+        // Kolom lain
+        TableColumn<Jadwal, String> matkulCol = new TableColumn<>("Mata Kuliah");
+        matkulCol.setCellValueFactory(new PropertyValueFactory<>("matkul"));
+        matkulCol.setMinWidth(150);
+
+        TableColumn<Jadwal, String> semesterCol = new TableColumn<>("Semester");
+        semesterCol.setCellValueFactory(new PropertyValueFactory<>("semester"));
+        semesterCol.setMinWidth(80);
+
+        TableColumn<Jadwal, String> kelasCol = new TableColumn<>("Kelas");
+        kelasCol.setCellValueFactory(new PropertyValueFactory<>("kelas"));
+        kelasCol.setMinWidth(60);
+
+        TableColumn<Jadwal, String> sksCol = new TableColumn<>("SKS");
+        sksCol.setCellValueFactory(new PropertyValueFactory<>("sks"));
+        sksCol.setMinWidth(60);
+
+        TableColumn<Jadwal, String> dosenCol = new TableColumn<>("Dosen");
+        dosenCol.setCellValueFactory(new PropertyValueFactory<>("dosen"));
+        dosenCol.setMinWidth(300);
+
+        // Tambahkan semua kolom sesuai urutan baru
+        table.getColumns().addAll(hariCol, jamCol, gkbCol, ruangCol, matkulCol, semesterCol, kelasCol, sksCol, dosenCol);
     }
 
     private void applyFilter(ObservableList<Jadwal> all, ComboBox<String> f, ComboBox<String> p, ObservableList<Jadwal> target) {
         String fakultas = f.getValue();
         String prodi = p.getValue();
+
         target.setAll(all.filtered(j ->
-                (fakultas == null || j.getFakultas().equalsIgnoreCase(fakultas)) &&
-                        (prodi == null || j.getProdi().equalsIgnoreCase(prodi))
+                ("Semua".equalsIgnoreCase(fakultas) || fakultas == null || j.getFakultas().equalsIgnoreCase(fakultas)) &&
+                        ("Semua".equalsIgnoreCase(prodi) || prodi == null || j.getProdi().equalsIgnoreCase(prodi))
         ));
     }
+
 }

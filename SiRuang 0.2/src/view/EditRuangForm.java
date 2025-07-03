@@ -1,6 +1,7 @@
 package view;
 
 import controller.RuangController;
+import database.RuangDB;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -8,31 +9,38 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import model.Ruang;
 import util.AlertUtil;
+import util.AutoCompleteTextField;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class EditRuangForm extends Stage {
 
     public EditRuangForm(Stage stage, Ruang ruangLama, Runnable onSukses) {
         setTitle("Edit Ruang");
 
+        // === Nama Ruang dengan autocomplete ===
         TextField namaField = new TextField(ruangLama.getNama());
+        List<String> semuaNamaRuang = RuangDB.loadRuang().stream().map(Ruang::getNama).toList();
+        AutoCompleteTextField.attachTo(namaField, semuaNamaRuang);
 
+        // === Gedung tetap ComboBox ===
         ComboBox<String> gedungCB = new ComboBox<>();
         gedungCB.getItems().addAll(Arrays.asList("GKB 1", "GKB 2", "GKB 3", "GKB 4"));
         gedungCB.setValue(ruangLama.getGedung());
 
+        // === Field lainnya ===
         TextField kapasitasField = new TextField(String.valueOf(ruangLama.getKapasitas()));
         TextField sesiField = new TextField(String.valueOf(ruangLama.getJumlahSesi()));
 
         Button simpanBtn = new Button("Simpan");
         simpanBtn.setOnAction(e -> {
             String nama = namaField.getText().trim();
-            String gedung = gedungCB.getEditor().getText().trim();
+            String gedung = gedungCB.getValue();
             String kapasitasStr = kapasitasField.getText().trim();
             String sesiStr = sesiField.getText().trim();
 
-            if (nama.isEmpty() || gedung.isEmpty() || kapasitasStr.isEmpty() || sesiStr.isEmpty()) {
+            if (nama.isEmpty() || gedung == null || kapasitasStr.isEmpty() || sesiStr.isEmpty()) {
                 alert("Lengkapi semua isian.");
                 return;
             }
@@ -52,6 +60,7 @@ public class EditRuangForm extends Stage {
             }
         });
 
+        // === Layout ===
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(15));
         grid.setHgap(10);

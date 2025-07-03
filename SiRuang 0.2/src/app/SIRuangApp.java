@@ -10,7 +10,6 @@ public class SIRuangApp extends Application {
     @Override
     public void start(Stage stage) {
         stage.setScene(new Scene(new LoginView(stage), 400, 300));
-        stage.setTitle("SIRuang - Login");
         stage.show();
     }
 

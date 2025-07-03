@@ -39,7 +39,7 @@ public class KelolaBookingController {
                 break;
             }
         }
-        RuangDB.saveAll(ruangList);
+        new RuangDB().saveAll(ruangList);
     }
 
     private static void showAlert(String msg) {
