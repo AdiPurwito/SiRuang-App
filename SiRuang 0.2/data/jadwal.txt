@@ -1,1 +1,9 @@
+Jumat|12.10 - 14.40|Aljabar Linear dan Matriks|2|3|K|Lailatul Husniah, S.ST., MT.|R611|Teknik|Informatika
+Jumat|18.15 - 19.55|Kewarganegaraan|2|2|K|Iradhad Taqwa Sihidi, S.IP., M.A|R601|Teknik|Informatika
+Jumat|15.15 - 17.45|Matematika Diskrit|2|3|G|Diana Maayangsari Ramadhani, S.ST., M.Tr.T.|R611|Teknik|Informatika
+Jumat|12.10 - 13.50|Sistem Informasi|2|2|G|Luqman Hakim, S.Kom., M.Kom.|R408|Teknik|Informatika
+Jumat|15.15 - 16.55|Matematika|2|2|B|Zamah Sari, ST., MT.|R504|FEB|Manajemen
+Jumat|15.15 - 17.45|Hukum Bisnis|2|3|C|Fera Putri Ayu Lestari, S.Kom.|R606|FEB|Manajemen
+Senin|07.00 - 08.40|Kewarganegaraan|3|2|K|Iradhad Taqwa Sihidi, S.IP., M.A|R611|Teknik|Teknik Elektro
+Senin|09.30 - 13.50|Basis Data|2|4|K|Diana Maayangsari Ramadhani, S.ST., M.Tr.T.|R611|Teknik|Informatika
 # hari|jam|matkul|semester|sks|kelas|dosen|ruang|fakultas|prodi

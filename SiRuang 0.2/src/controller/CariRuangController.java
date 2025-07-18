@@ -16,21 +16,23 @@ public class CariRuangController {
 
     public static void prosesBooking(String username, String ruang, int sesiMulai, int sks, Runnable onSuccess) {
         String hari = getHariIni();
-        String jamFinal = SesiUtil.getRentangWaktu(sesiMulai, sks);
+        String jamFinal = SesiUtil.getRentangWaktu(sesiMulai, sks); // jam seperti "08.00-09.50"
 
-        String statusRuang = StatusUtil.statusRuangNow(ruang);
-        if (statusRuang.equalsIgnoreCase("Menunggu")) {
-            AlertUtil.error("Ruang sedang dalam status MENUNGGU dan tidak dapat dibooking.");
+        // ✅ Validasi status ruang berdasar waktu aktual booking
+        String statusRuang = StatusUtil.getStatusRuang(ruang, hari, jamFinal);
+        if (!statusRuang.equalsIgnoreCase("Kosong")) {
+            AlertUtil.error("Ruang tidak bisa dibooking. Status saat itu: " + statusRuang);
             return;
         }
 
+        // ✅ Validasi konflik dengan jadwal atau booking lain
+        if (BentrokUtil.isBentrokTotal(hari, ruang, jamFinal, true)) {
+            AlertUtil.error("Ruang tidak tersedia pada sesi tersebut (bentrok).");
+            return;
+        }
+
+        // ✅ Proses simpan booking
         Booking baru = new Booking(username, ruang, hari, jamFinal, "menunggu");
-
-        if (util.BentrokUtil.isBentrokTotal(hari, ruang, jamFinal, true)) {
-            AlertUtil.error("Ruang tidak tersedia pada sesi tersebut.");
-            return;
-        }
-
         BookingDB db = new BookingDB();
         List<Booking> semua = db.load();
         semua.add(baru);
@@ -39,7 +41,6 @@ public class CariRuangController {
         AlertUtil.show("Booking berhasil dikirim.");
         onSuccess.run();
     }
-
 
     public static String getHariIni() {
         return switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {

@@ -26,10 +26,10 @@ public class StatusUtil {
             int mulai = sesi[0], akhir = mulai + sesi[1] - 1;
 
             if (status.equals("menunggu")) {
-                return "Menunggu"; // tampil selalu
+                return "Menunggu";
             } else if ((status.equals("diterima") || status.equals("disetujui"))
                     && sesiSekarang >= mulai && sesiSekarang <= akhir) {
-                return "Terbooking"; // hanya jika sekarang berada dalam range sesi
+                return "Terbooking";
             }
         }
 
@@ -47,6 +47,7 @@ public class StatusUtil {
             }
         }
 
+        // Di luar jam kampus
         if (sesiSekarang == -1) {
             LocalTime now = LocalTime.now();
             if (now.isAfter(LocalTime.of(6, 30)) && now.isBefore(LocalTime.of(21, 0))) {
@@ -55,8 +56,34 @@ public class StatusUtil {
                 return "Di Luar Jam Kampus";
             }
         }
-        return "Kosong";
 
+        return "Kosong";
+    }
+
+    public static String getStatusRuang(String ruang, String hari, String jam) {
+        // Jadwal tetap
+        List<Jadwal> semuaJadwal = JadwalDB.loadJadwal();
+        for (Jadwal j : semuaJadwal) {
+            if (j.getHari().equalsIgnoreCase(hari)
+                    && j.getRuang().equalsIgnoreCase(ruang)
+                    && BentrokUtil.jamTumpangTindih(j.getJam(), jam)) {
+                return "Terpakai Jadwal";
+            }
+        }
+
+        // Booking mahasiswa
+        List<Booking> semuaBooking = BookingDB.loadAll();
+        for (Booking b : semuaBooking) {
+            if (b.getHari().equalsIgnoreCase(hari)
+                    && b.getRuang().equalsIgnoreCase(ruang)
+                    && BentrokUtil.jamTumpangTindih(b.getJam(), jam)) {
+                if (b.getStatus().equalsIgnoreCase("menunggu")) return "Menunggu";
+                if (b.getStatus().equalsIgnoreCase("diterima") || b.getStatus().equalsIgnoreCase("disetujui"))
+                    return "Terbooking";
+            }
+        }
+
+        return "Kosong";
     }
 
     public static String getHariIni() {
